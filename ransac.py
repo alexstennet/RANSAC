@@ -32,9 +32,9 @@ import scipy.linalg # use numpy if scipy unavailable
 ## (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 ## OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-def ransac(data,model,n,k,t,d,debug=False,return_all=False):
+def ransac(data,model,n,k,t,d,m,debug=False,return_all=False):
     """fit model parameters to data using the RANSAC algorithm
-    
+
 This implementation written from pseudocode found at
 http://en.wikipedia.org/w/index.php?title=RANSAC&oldid=116358182
 
@@ -46,6 +46,7 @@ Given:
     k - the maximum number of iterations allowed in the algorithm
     t - a threshold value for determining when a data point fits a model
     d - the number of close data values required to assert that a model fits well to data
+    ADDED m - number of points to choose to select minimum from
 Return:
     bestfit - model parameters which best fit the data (or nil if no good model is found)
 iterations = 0
@@ -76,10 +77,11 @@ return bestfit
 """
     iterations = 0
     bestfit = None
-    besterr = numpy.inf
+    besterr = 0
     best_inlier_idxs = None
     while iterations < k:
-        maybe_idxs, test_idxs = random_partition(n,data.shape[0])
+        print(iterations/k * 100)
+        maybe_idxs, test_idxs = random_partition(n,m,data) # Changed: random_partition(n,data.shape[0])
         maybeinliers = data[maybe_idxs,:]
         test_points = data[test_idxs]
         maybemodel = model.fit(maybeinliers)
@@ -87,20 +89,38 @@ return bestfit
         also_idxs = test_idxs[test_err < t] # select indices of rows with accepted points
         alsoinliers = data[also_idxs,:]
         if debug:
-            print 'test_err.min()',test_err.min()
-            print 'test_err.max()',test_err.max()
-            print 'numpy.mean(test_err)',numpy.mean(test_err)
-            print 'iteration %d:len(alsoinliers) = %d'%(
-                iterations,len(alsoinliers))
+            print('test_err.min()',test_err.min())
+            print('test_err.max()',test_err.max())
+            print('numpy.mean(test_err)',numpy.mean(test_err))
+            print('iteration %d:len(alsoinliers) = %d'%(
+                iterations,len(alsoinliers)))
         if len(alsoinliers) > d:
             betterdata = numpy.concatenate( (maybeinliers, alsoinliers) )
             bettermodel = model.fit(betterdata)
             better_errs = model.get_error( betterdata, bettermodel)
-            thiserr = numpy.mean( better_errs )
-            if thiserr < besterr:
+            # thiserr = numpy.max( better_errs )
+            inliers = numpy.concatenate( (maybe_idxs, also_idxs) )
+
+            max_X = max(data[inliers][:,0])
+            min_X = min(data[inliers][:,0])
+
+            max_Y = max(data[inliers][:,1])
+            min_Y = min(data[inliers][:,1])
+
+            diff_X = abs(max_X - min_X)
+            diff_Y = abs(max_Y - min_Y)
+
+            area = diff_X * diff_Y
+
+            num_pts = len(data[inliers])
+
+            density = num_pts / area
+
+            thiserr = density#numpy.mean(data[inliers][:,2])
+            if thiserr > besterr:
                 bestfit = bettermodel
                 besterr = thiserr
-                best_inlier_idxs = numpy.concatenate( (maybe_idxs, also_idxs) )
+                best_inlier_idxs = inliers
         iterations+=1
     if bestfit is None:
         raise ValueError("did not meet fit acceptance criteria")
@@ -109,12 +129,19 @@ return bestfit
     else:
         return bestfit
 
-def random_partition(n,n_data):
+def random_partition(n,m,data):
     """return n random rows of data (and also the other len(data)-n rows)"""
-    all_idxs = numpy.arange( n_data )
-    numpy.random.shuffle(all_idxs)
-    idxs1 = all_idxs[:n]
-    idxs2 = all_idxs[n:]
+    # Changed most
+    all_idxs = numpy.arange( data.shape[0] )
+    idxs1 = []
+    for _ in range(m):
+        numpy.random.shuffle(all_idxs)
+        idxs = all_idxs[:m]
+        idx = min(idxs, key=lambda x: data[x][2])
+        idxs1.append(idx)
+
+    all_idxs = numpy.arange( data.shape[0] )
+    idxs2 = numpy.delete(all_idxs, idxs1)
     return idxs1, idxs2
 
 class LinearLeastSquaresModel:
@@ -122,7 +149,7 @@ class LinearLeastSquaresModel:
 
     This class serves as an example that fulfills the model interface
     needed by the ransac() function.
-    
+
     """
     def __init__(self,input_columns,output_columns,debug=False):
         self.input_columns = input_columns
@@ -139,7 +166,7 @@ class LinearLeastSquaresModel:
         B_fit = scipy.dot(A,model)
         err_per_point = numpy.sum((B-B_fit)**2,axis=1) # sum squared error per row
         return err_per_point
-        
+
 def test():
     # generate perfect input data
 
@@ -206,4 +233,3 @@ def test():
 
 if __name__=='__main__':
     test()
-    
