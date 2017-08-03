@@ -1,11 +1,13 @@
 from ransac import LinearLeastSquaresModel
 from sklearn.preprocessing import PolynomialFeatures
+import numpy, scipy
 
-class PolynomialLeastSquaresModel(LinearLeastSquaresModel):
+class PolynomialLeastSquaresModel:
     """docstring for PolynomialLeastSquaresModel."""
     def __init__(self, input_columns, output_columns, deg):
-        super(self, input_columns, output_columns)
-        self.poly = PolynomialFeatures(degree=2)
+        self.input_columns = input_columns
+        self.output_columns = output_columns
+        self.poly = PolynomialFeatures(deg)
     def fit(self, data):
         A = numpy.vstack([data[:,i] for i in self.input_columns]).T
         B = numpy.vstack([data[:,i] for i in self.output_columns]).T
