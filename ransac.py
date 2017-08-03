@@ -144,29 +144,6 @@ def random_partition(n,m,data):
     idxs2 = numpy.delete(all_idxs, idxs1)
     return idxs1, idxs2
 
-class LinearLeastSquaresModel:
-    """linear system solved using linear least squares
-
-    This class serves as an example that fulfills the model interface
-    needed by the ransac() function.
-
-    """
-    def __init__(self,input_columns,output_columns,debug=False):
-        self.input_columns = input_columns
-        self.output_columns = output_columns
-        self.debug = debug
-    def fit(self, data):
-        A = numpy.vstack([data[:,i] for i in self.input_columns]).T
-        B = numpy.vstack([data[:,i] for i in self.output_columns]).T
-        x,resids,rank,s = scipy.linalg.lstsq(A,B)
-        return x
-    def get_error( self, data, model):
-        A = numpy.vstack([data[:,i] for i in self.input_columns]).T
-        B = numpy.vstack([data[:,i] for i in self.output_columns]).T
-        B_fit = scipy.dot(A,model)
-        err_per_point = numpy.sum((B-B_fit)**2,axis=1) # sum squared error per row
-        return err_per_point
-
 def test():
     # generate perfect input data
 
