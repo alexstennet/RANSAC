@@ -1,4 +1,3 @@
-from ransac import LinearLeastSquaresModel
 from sklearn.preprocessing import PolynomialFeatures
 import numpy, scipy
 
