@@ -6,7 +6,7 @@ import sys
 import pykitti
 import numpy as np
 
-basedir = "../KITTI Datasets/"
+basedir = "../KITTI_raw/"
 date = sys.argv[1] #"2011_09_26"
 drive = sys.argv[2] #"0001"
 
