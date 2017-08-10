@@ -81,7 +81,8 @@ return bestfit
     besterr = 0
     best_inlier_idxs = None
     while iterations < k:
-        console_log(iterations, k)
+        if debug:
+            console_log(iterations, k)
 
         maybe_idxs, test_idxs = random_partition(n,m,data) # Changed: random_partition(n,data.shape[0])
         maybeinliers = data[maybe_idxs,:]
