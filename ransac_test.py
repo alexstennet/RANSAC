@@ -35,10 +35,10 @@ for velo in velos:
     velo = np.delete(velo, 3, axis=1)
 
     seg = fit(velo, 200, .1)
-    np.savetxt('./{}/{drive}/{}-1.txt'.format(date, drive, i), seg)
+    np.savetxt('./{}/{}/{}-1.txt'.format(date, drive, i), seg)
 
     seg2 = fit(seg, 200, .05)
-    np.savetxt('./blah/{}-2.txt'.format(i), seg2)
+    np.savetxt('./{}/{}/{}-2.txt'.format(i), seg2)
     i += 1
 #
 # seg3 = fit(seg2, 400, .075)
