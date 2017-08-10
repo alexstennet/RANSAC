@@ -1,6 +1,7 @@
 import numpy
 import scipy # use numpy if scipy unavailable
 import scipy.linalg # use numpy if scipy unavailable
+import sys
 
 ## Copyright (c) 2004-2007, Andrew D. Straw. All rights reserved.
 
@@ -80,7 +81,8 @@ return bestfit
     besterr = 0
     best_inlier_idxs = None
     while iterations < k:
-        print(iterations/k * 100)
+        console_log(iterations, k)
+
         maybe_idxs, test_idxs = random_partition(n,m,data) # Changed: random_partition(n,data.shape[0])
         maybeinliers = data[maybe_idxs,:]
         test_points = data[test_idxs]
@@ -116,7 +118,7 @@ return bestfit
 
             density = num_pts / area
 
-            thiserr = density#numpy.mean(data[inliers][:,2])
+            thiserr = density #numpy.mean(data[inliers][:,2])
             if thiserr > besterr:
                 bestfit = bettermodel
                 besterr = thiserr
@@ -143,6 +145,18 @@ def random_partition(n,m,data):
     all_idxs = numpy.arange( data.shape[0] )
     idxs2 = numpy.delete(all_idxs, idxs1)
     return idxs1, idxs2
+
+def console_log(iterations, k):
+    percent = int(iterations / k * 100)
+    eqper = int(iterations / k * 50)
+    sys.stdout.write("\r||{0}{1}||{2}%   ({3}/{4} iterations)".format(
+            "="*eqper,
+            " "*(50 - eqper),
+            percent,
+            iterations,
+            k
+        ))
+    sys.stdout.flush()
 
 def test():
     # generate perfect input data
