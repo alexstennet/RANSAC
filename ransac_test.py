@@ -31,7 +31,7 @@ def fit(data, iterations, threshold):
                                      return_all=True)
     return data[ransac_data['inliers']]
 
-os.makedir('../segmmented/{}/{}'.format(date, drive), exist_ok=True)
+os.mkdir('../segmmented/{}/{}'.format(date, drive), exist_ok=True)
 
 for velo in velos:
     velo = np.delete(velo, 3, axis=1)
