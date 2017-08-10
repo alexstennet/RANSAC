@@ -40,7 +40,7 @@ for velo in velos:
     np.savetxt('../segmented/{}/{}/{}-1.txt'.format(date, drive, i), seg)
 
     seg2 = fit(seg, 200, .05)
-    np.savetxt('./segmented/{}/{}/{}-2.txt'.format(i), seg2)
+    np.savetxt('./segmented/{}/{}/{}-2.txt'.format(date, drive, i), seg2)
     i += 1
 #
 # seg3 = fit(seg2, 400, .075)
